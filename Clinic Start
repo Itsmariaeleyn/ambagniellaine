@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CLINIQ – Start Processing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: #f0f2f7; color: #1a2740; }
+
+    
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px;
+      background: #5b7198; display: flex; align-items: center;
+      padding: 0 20px; gap: 14px; z-index: 200;
+    }
+    .logo { display: flex; align-items: center; gap: 9px; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 2px; user-select: none; }
+    .logo svg { width: 26px; height: 26px; }
+    .topbar-search {
+      flex: 1; max-width: 420px; height: 32px;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 5px; padding: 0 12px; color: #fff; font-size: 13px; font-family: inherit; outline: none;
+    }
+    .topbar-search::placeholder { color: rgba(255,255,255,0.5); }
+
+
+    .layout { display: flex; padding-top: 52px; min-height: 100vh; }
+
+ 
+    .sidebar {
+      width: 190px; flex-shrink: 0; background: #4e6490;
+      position: fixed; top: 52px; left: 0; bottom: 0;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px; background: #3a4f72; margin: 10px 10px 0; border-radius: 8px;
+    }
+    .avatar {
+      width: 36px; height: 36px; background: #2d3e5c; border-radius: 7px;
+      color: #fff; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .user-name { color: #fff; font-size: 13px; font-weight: 600; line-height: 1.2; }
+    .user-role { color: rgba(255,255,255,0.55); font-size: 10.5px; }
+    .nav-group-label {
+      color: rgba(255,255,255,0.45); font-size: 10px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; padding: 14px 16px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 9px 16px;
+      color: rgba(255,255,255,0.72); font-size: 13px; font-weight: 500;
+      cursor: pointer; border-left: 3px solid transparent; transition: background 0.12s, color 0.12s;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; border-left-color: #fff; }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.8; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-signout {
+      margin-top: auto; display: flex; align-items: center; gap: 9px;
+      padding: 10px 16px; color: rgba(255,255,255,0.65); font-size: 13px; cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .nav-signout:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .nav-signout svg { width: 15px; height: 15px; }
+    .sidebar-emblem { text-align: center; padding: 16px 0 20px; opacity: 0.2; }
+    .sidebar-emblem svg { width: 52px; height: 52px; }
+
+    .main {
+      margin-left: 190px; flex: 1; display: flex;
+      align-items: center; justify-content: center;
+      padding: 40px 32px; min-height: calc(100vh - 52px);
+    }
+
+ 
+    .modal-outer { position: relative; }
+    .modal {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(40,60,100,0.13), 0 2px 8px rgba(0,0,0,0.06);
+      width: 660px; padding: 30px 34px 34px; position: relative;
+    }
+    .close-btn {
+      position: absolute; top: 16px; right: 16px;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 1.8px solid #ccd3e0; background: transparent; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #8a98b0; transition: border-color 0.15s, color 0.15s;
+    }
+    .close-btn:hover { border-color: #8a98b0; color: #3a4f72; }
+    .close-btn svg { width: 13px; height: 13px; }
+
+    .modal-title { font-size: 20px; font-weight: 700; color: #1a2740; letter-spacing: -0.2px; }
+    .modal-sub { font-size: 12px; color: #8a98b0; margin-top: 3px; margin-bottom: 20px; }
+
+    /* ── PATIENT CARD ── */
+    .patient-card {
+      background: #f0f3f9; border: 1px solid #dde3ef; border-radius: 10px;
+      padding: 18px 20px; display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px 20px; margin-bottom: 20px;
+    }
+    .field label {
+      display: block; font-size: 9.5px; font-weight: 700;
+      letter-spacing: 0.9px; text-transform: uppercase; color: #7a8eaa; margin-bottom: 5px;
+    }
+    .field-input {
+      width: 100%; background: #fff; border: 1.5px solid #dde3ef; border-radius: 6px;
+      padding: 8px 12px; font-size: 13px; font-weight: 500; color: #1a2740;
+      font-family: inherit; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field-input:focus { border-color: #3a4f72; box-shadow: 0 0 0 3px rgba(58,79,114,0.1); }
+    .field-input.mono { font-family: 'DM Mono', monospace; font-size: 12.5px; }
+    .field-input.readonly { background: #f7f9fc; color: #5b6f8a; cursor: default; }
+
+ 
+    .sec-label {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.9px;
+      text-transform: uppercase; color: #7a8eaa; margin-bottom: 9px;
+    }
+
+
+    .tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+    .tag {
+      background: #3a4f72; color: #fff; font-size: 12px; font-weight: 600;
+      padding: 6px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px;
+      cursor: default;
+    }
+    .tag-remove {
+      width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      font-size: 10px; line-height: 1; transition: background 0.12s;
+    }
+    .tag-remove:hover { background: rgba(255,255,255,0.45); }
+    .tag-add {
+      background: transparent; border: 1.5px dashed #b0bdd4; color: #8a98b0;
+      font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 6px;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+    }
+    .tag-add:hover { border-color: #3a4f72; color: #3a4f72; }
+
+    /* tag input popup */
+    .tag-input-wrap { display: flex; align-items: center; gap: 6px; }
+    .tag-input {
+      border: 1.5px solid #3a4f72; border-radius: 6px; padding: 5px 10px;
+      font-size: 12px; font-family: inherit; outline: none; width: 110px;
+    }
+    .tag-input-btn {
+      background: #3a4f72; color: #fff; border: none; border-radius: 5px;
+      padding: 5px 10px; font-size: 12px; font-family: inherit; cursor: pointer;
+    }
+
+
+    .priority-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
+    .badge-stat {
+      background: #e84057; color: #fff; font-size: 9px; font-weight: 800;
+      padding: 3px 8px; border-radius: 4px; letter-spacing: 1.2px;
+    }
+    .priority-time { font-size: 12px; color: #8a98b0; }
+    .note-box {
+      background: #fefae8; border: 1.5px solid #f0d96b; border-radius: 7px;
+      padding: 2px 4px; margin-bottom: 18px;
+    }
+    .note-textarea {
+      width: 100%; background: transparent; border: none; outline: none;
+      padding: 9px 10px; font-size: 13px; font-style: italic; color: #7a6820;
+      font-family: inherit; resize: none; min-height: 40px;
+    }
+
+
+    .select-wrap { position: relative; width: 220px; margin-bottom: 26px; }
+    .tech-select {
+      width: 100%; appearance: none; background: #fff;
+      border: 1.5px solid #dde3ef; border-radius: 7px;
+      padding: 9px 36px 9px 12px; font-size: 13px; font-family: inherit;
+      font-weight: 500; color: #1a2740; cursor: pointer; outline: none; transition: border-color 0.15s;
+    }
+    .tech-select:focus { border-color: #3a4f72; box-shadow: 0 0 0 3px rgba(58,79,114,0.1); }
+    .select-arrow { pointer-events: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #8a98b0; }
+    .select-arrow svg { width: 14px; height: 14px; display: block; }
+
+    .actions { display: flex; gap: 12px; }
+    .btn {
+      flex: 1; padding: 14px 18px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; font-family: inherit; cursor: pointer; border: none;
+      transition: background 0.13s, transform 0.1s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-cancel { background: #d1d8e8; color: #3a4f72; }
+    .btn-cancel:hover { background: #bfc9de; }
+    .btn-confirm { background: #3a4f72; color: #fff; }
+    .btn-confirm:hover { background: #2d3e5c; }
+    .btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  
+    .success-badge {
+      position: absolute; bottom: -24px; right: -24px;
+      width: 56px; height: 56px; background: #28c76f; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 5px 18px rgba(40,199,111,0.38); border: 3px solid #f0f2f7;
+    }
+    .success-badge svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1a2740; color: #fff; padding: 14px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s; z-index: 999; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .toast.success .toast-icon { color: #28c76f; }
+    .toast.error .toast-icon { color: #e84057; }
+    .toast-icon svg { width: 18px; height: 18px; display: block; }
+
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(20,30,50,0.35);
+      z-index: 150; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+
+
+    .confirm-overlay {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.96);
+      border-radius: 14px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 10;
+    }
+    .confirm-overlay.visible { opacity: 1; pointer-events: auto; }
+    .confirm-check {
+      width: 72px; height: 72px; background: #28c76f; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 24px rgba(40,199,111,0.35);
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .confirm-check svg { width: 34px; height: 34px; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .confirm-title { font-size: 18px; font-weight: 700; color: #1a2740; }
+    .confirm-sub { font-size: 13px; color: #8a98b0; text-align: center; }
+    .confirm-close-btn {
+      margin-top: 6px; background: #3a4f72; color: #fff; border: none;
+      border-radius: 8px; padding: 11px 28px; font-size: 14px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: background 0.13s;
+    }
+    .confirm-close-btn:hover { background: #2d3e5c; }
+
+
+    .field-input.invalid { border-color: #e84057; box-shadow: 0 0 0 3px rgba(232,64,87,0.1); }
+    .error-msg { color: #e84057; font-size: 11px; margin-top: 4px; display: none; }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+
+
+  <header class="topbar">
+    <div class="logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <line x1="16" y1="2" x2="16" y2="30" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M10 9c0-3.3 2.7-6 6-6s6 2.7 6 6c0 4-6 8-6 8s-6-4-6-8z" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M9 15c-3.5 1.5-4.5 4.5-2 6.5s5.5 1.5 9-1" stroke="white" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+        <path d="M23 15c3.5 1.5 4.5 4.5 2 6.5s-5.5 1.5-9-1" stroke="white" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+        <path d="M9 21c-3 1.5-3 4-1 6s5 2 8 2" stroke="white" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+        <path d="M23 21c3 1.5 3 4 1 6s-5 2-8 2" stroke="white" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      </svg>
+      CLINIQ
+    </div>
+    <input class="topbar-search" type="text" placeholder="Search patients, requests…"/>
+  </header>
+
+  <div class="layout">
+
+
+    <nav class="sidebar">
+      <div class="user-card">
+        <div class="avatar">MC</div>
+        <div>
+          <div class="user-name">Curitana, MC</div>
+          <div class="user-role">Lab Administrator</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="nav-item active" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Overview
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </div>
+      </div>
+
+      <div class="nav-group-label">Management</div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Test Catalog
+      </div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+        Lab Requests
+      </div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+        Billing
+      </div>
+
+      <div class="nav-group-label">Reports</div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Analytics
+      </div>
+
+      <div class="nav-signout" onclick="handleSignOut()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Sign Out
+      </div>
+
+      <div class="sidebar-emblem">
+        <svg viewBox="0 0 48 48" fill="none">
+          <line x1="24" y1="4" x2="24" y2="44" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M16 13c0-4.4 3.6-8 8-8s8 3.6 8 8c0 5-8 11-8 11s-8-6-8-11z" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M14 23c-5 2-6 6-3 9s8 2 13-1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M34 23c5 2 6 6 3 9s-8 2-13-1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M14 32c-4 2-4 5-2 8s7 3 12 3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M34 32c4 2 4 5 2 8s-7 3-12 3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="modal-outer" id="modalOuter">
+        <div class="modal" id="mainModal">
+
+          <button class="close-btn" onclick="handleCancel()" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <div class="modal-title">Start Processing &ndash; #REQ-2026001</div>
+          <div class="modal-sub">Confirm details before marking as In Progress</div>
+
+    
+          <div class="patient-card">
+            <div class="field">
+              <label>Patient</label>
+              <input class="field-input" id="fieldPatient" type="text" value="Curitana, Maria Antoinette C." placeholder="Full name"/>
+              <div class="error-msg" id="errPatient">Patient name is required.</div>
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input class="field-input" id="fieldDob" type="text" value="Jul 14, 1992" placeholder="MMM DD, YYYY"/>
+              <div class="error-msg" id="errDob">Date of birth is required.</div>
+            </div>
+            <div class="field">
+              <label>Chart No.</label>
+              <input class="field-input mono" id="fieldChart" type="text" value="PT-19920714-055" placeholder="PT-XXXXXXXX-XXX"/>
+              <div class="error-msg" id="errChart">Chart number is required.</div>
+            </div>
+            <div class="field">
+              <label>Sex</label>
+              <select class="field-input" id="fieldSex" style="cursor:pointer;">
+                <option value="FEMALE" selected>FEMALE</option>
+                <option value="MALE">MALE</option>
+                <option value="OTHER">OTHER</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Physician</label>
+              <input class="field-input" id="fieldPhysician" type="text" value="Dr. Katarina Yu, MD" placeholder="Physician name"/>
+              <div class="error-msg" id="errPhysician">Physician name is required.</div>
+            </div>
+            <div class="field">
+              <label>Specimen</label>
+              <select class="field-input" id="fieldSpecimen" style="cursor:pointer;">
+                <option value="Whole Blood" selected>Whole Blood</option>
+                <option value="Serum">Serum</option>
+                <option value="Plasma">Plasma</option>
+                <option value="Urine">Urine</option>
+                <option value="Swab">Swab</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sec-label">Tests Ordered</div>
+          <div class="tags" id="tagContainer">
+            <span class="tag" data-name="CBC">CBC <span class="tag-remove" onclick="removeTag(this)">✕</span></span>
+            <span class="tag" data-name="Urinalysis">Urinalysis <span class="tag-remove" onclick="removeTag(this)">✕</span></span>
+            <span class="tag" data-name="Lipid Panel">Lipid Panel <span class="tag-remove" onclick="removeTag(this)">✕</span></span>
+            <button class="tag-add" onclick="showTagInput()" id="tagAddBtn">+ Add Test</button>
+            <div class="tag-input-wrap" id="tagInputWrap" style="display:none;">
+              <input class="tag-input" id="tagInputField" type="text" placeholder="Test name…" onkeydown="tagKeydown(event)"/>
+              <button class="tag-input-btn" onclick="addTag()">Add</button>
+            </div>
+          </div>
+          <div class="error-msg" id="errTags" style="margin-bottom:8px;">At least one test must be ordered.</div>
+
+    
+          <div class="sec-label" style="margin-top:4px;">Priority &amp; Notes</div>
+          <div class="priority-row">
+            <span class="badge-stat">STAT</span>
+            <span class="priority-time" id="submitTime">Submitted Apr 9, 2026 &middot; 8:02</span>
+          </div>
+          <div class="note-box">
+            <textarea class="note-textarea" id="fieldNote" rows="2" placeholder="Add clinical notes here…">*Chest pain workup. Stat labs requested by ER.</textarea>
+          </div>
+
+       
+          <div class="sec-label">Assign to Technician</div>
+          <div class="select-wrap">
+            <select class="tech-select" id="fieldTech">
+              <option value="">— Select technician —</option>
+              <option value="Winter Kim, RMT" selected>Winter Kim, RMT</option>
+              <option value="Alex Santos, RMT">Alex Santos, RMT</option>
+              <option value="Jenna Reyes, RMT">Jenna Reyes, RMT</option>
+              <option value="Marco Dela Cruz, RMT">Marco Dela Cruz, RMT</option>
+            </select>
+            <span class="select-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </div>
+          <div class="error-msg" id="errTech" style="margin-top:-20px; margin-bottom:14px;">Please assign a technician.</div>
+
+
+          <div class="actions">
+            <button class="btn btn-cancel" onclick="handleCancel()">Cancel</button>
+            <button class="btn btn-confirm" id="confirmBtn" onclick="handleConfirm()">Confirm – Mark as Processing</button>
+          </div>
+
+
+          <div class="confirm-overlay" id="successOverlay">
+            <div class="confirm-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="confirm-title">Marked as Processing!</div>
+            <div class="confirm-sub" id="successSub">REQ-2026001 has been assigned to Winter Kim, RMT.</div>
+            <button class="confirm-close-btn" onclick="resetForm()">Done</button>
+          </div>
+
+        </div>
+
+
+        <div class="success-badge">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </span>
+    <span id="toastMsg">Done!</span>
+  </div>
+
+  <script>
+
+    function setNav(el) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+
+    function handleSignOut() {
+      showToast('You have been signed out.', 'success');
+    }
+
+    function removeTag(btn) {
+      btn.closest('.tag').remove();
+    }
+    function showTagInput() {
+      document.getElementById('tagAddBtn').style.display = 'none';
+      document.getElementById('tagInputWrap').style.display = 'flex';
+      document.getElementById('tagInputField').focus();
+    }
+    function addTag() {
+      const input = document.getElementById('tagInputField');
+      const val = input.value.trim();
+      if (!val) return;
+      const container = document.getElementById('tagContainer');
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.name = val;
+      tag.innerHTML = `${val} <span class="tag-remove" onclick="removeTag(this)">✕</span>`;
+      container.insertBefore(tag, document.getElementById('tagAddBtn'));
+      input.value = '';
+      document.getElementById('tagInputWrap').style.display = 'none';
+      document.getElementById('tagAddBtn').style.display = '';
+    }
+    function tagKeydown(e) {
+      if (e.key === 'Enter') addTag();
+      if (e.key === 'Escape') {
+        document.getElementById('tagInputWrap').style.display = 'none';
+        document.getElementById('tagAddBtn').style.display = '';
+      }
+    }
+
+
+    function validate() {
+      let ok = true;
+      const required = [
+        { id: 'fieldPatient', err: 'errPatient' },
+        { id: 'fieldDob',     err: 'errDob' },
+        { id: 'fieldChart',   err: 'errChart' },
+        { id: 'fieldPhysician', err: 'errPhysician' },
+      ];
+      required.forEach(({ id, err }) => {
+        const el = document.getElementById(id);
+        const errEl = document.getElementById(err);
+        if (!el.value.trim()) {
+          el.classList.add('invalid');
+          errEl.classList.add('show');
+          ok = false;
+        } else {
+          el.classList.remove('invalid');
+          errEl.classList.remove('show');
+        }
+      });
+
+
+      const tags = document.querySelectorAll('#tagContainer .tag');
+      const errTags = document.getElementById('errTags');
+      if (tags.length === 0) { errTags.classList.add('show'); ok = false; }
+      else { errTags.classList.remove('show'); }
+
+
+      const tech = document.getElementById('fieldTech');
+      const errTech = document.getElementById('errTech');
+      if (!tech.value) { errTech.classList.add('show'); ok = false; }
+      else { errTech.classList.remove('show'); }
+
+      return ok;
+    }
+
+ 
+    document.querySelectorAll('.field-input').forEach(el => {
+      el.addEventListener('input', () => {
+        el.classList.remove('invalid');
+        const errId = 'err' + el.id.replace('field','');
+        const errEl = document.getElementById(errId);
+        if (errEl) errEl.classList.remove('show');
+      });
+    });
+
+
+    function handleConfirm() {
+      if (!validate()) {
+        showToast('Please fill in all required fields.', 'error');
+        return;
+      }
+      const tech = document.getElementById('fieldTech').value;
+      document.getElementById('successSub').textContent =
+        `REQ-2026001 has been assigned to ${tech}.`;
+      document.getElementById('successOverlay').classList.add('visible');
+    }
+
+
+    function handleCancel() {
+      if (confirm('Discard changes and close this request?')) {
+        showToast('Request cancelled.', 'success');
+        document.getElementById('successOverlay').classList.remove('visible');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('successOverlay').classList.remove('visible');
+      showToast('Request marked as Processing!', 'success');
+    }
+
+
+    let toastTimer;
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.className = 'toast ' + type;
+
+      if (type === 'success') {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+      } else {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      }
+
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
