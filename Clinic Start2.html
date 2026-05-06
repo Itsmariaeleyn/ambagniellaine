@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CLINIQ – Start Processing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-logo">
+      <span class="topbar-logo-text">CLINIQ</span>
+    </div>
+    <input class="topbar-search" type="text" placeholder="Search patients, invoices…"/>
+  </header>
+
+  <div class="layout">
+
+    <nav class="sidebar">
+      <div class="user-card">
+        <div class="avatar">MC</div>
+        <div>
+          <div class="user-name">Curitana, MC</div>
+          <div class="user-role">Lab Administrator</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="nav-item" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Overview
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </div>
+      </div>
+
+      <div class="nav-group-label">Management</div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Test Catalog
+      </div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+        Lab Requests
+      </div>
+      <div class="nav-item active" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+        Billing
+      </div>
+
+      <div class="nav-group-label">Reports</div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Analytics
+      </div>
+
+      <div class="nav-signout" onclick="handleSignOut()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Sign Out
+      </div>
+
+      <div class="sidebar-emblem"></div>
+    </nav>
+
+    <main class="main">
+      <div class="modal-outer" id="modalOuter">
+        <div class="modal" id="mainModal">
+
+          <button class="close-btn" onclick="handleCancel()" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <div class="modal-title">Start Processing &ndash; #REQ-2026001</div>
+          <div class="modal-sub">Confirm details before marking as In Progress</div>
+
+          <div class="patient-card">
+            <div class="field">
+              <label>Patient</label>
+              <input class="field-input" id="fieldPatient" type="text" value="Curitana, Maria Antoinette C." placeholder="Full name"/>
+              <div class="error-msg" id="errPatient">Patient name is required.</div>
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input class="field-input" id="fieldDob" type="text" value="Jul 14, 1992" placeholder="MMM DD, YYYY"/>
+              <div class="error-msg" id="errDob">Date of birth is required.</div>
+            </div>
+            <div class="field">
+              <label>Chart No.</label>
+              <input class="field-input mono" id="fieldChart" type="text" value="PT-19920714-055" placeholder="PT-XXXXXXXX-XXX"/>
+              <div class="error-msg" id="errChart">Chart number is required.</div>
+            </div>
+            <div class="field">
+              <label>Sex</label>
+              <select class="field-input" id="fieldSex" style="cursor:pointer;">
+                <option value="FEMALE" selected>FEMALE</option>
+                <option value="MALE">MALE</option>
+                <option value="OTHER">OTHER</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Physician</label>
+              <input class="field-input" id="fieldPhysician" type="text" value="Dr. Katarina Yu, MD" placeholder="Physician name"/>
+              <div class="error-msg" id="errPhysician">Physician name is required.</div>
+            </div>
+            <div class="field">
+              <label>Specimen</label>
+              <select class="field-input" id="fieldSpecimen" style="cursor:pointer;">
+                <option value="Whole Blood" selected>Whole Blood</option>
+                <option value="Serum">Serum</option>
+                <option value="Plasma">Plasma</option>
+                <option value="Urine">Urine</option>
+                <option value="Swab">Swab</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sec-label">Tests Ordered</div>
+          <div class="tags" id="tagContainer">
+            <span class="tag" data-name="CBC">CBC <span class="tag-remove" onclick="removeTag(this)">&#x2715;</span></span>
+            <span class="tag" data-name="Urinalysis">Urinalysis <span class="tag-remove" onclick="removeTag(this)">&#x2715;</span></span>
+            <span class="tag" data-name="Lipid Panel">Lipid Panel <span class="tag-remove" onclick="removeTag(this)">&#x2715;</span></span>
+            <button class="tag-add" onclick="showTagInput()" id="tagAddBtn">+ Add Test</button>
+            <div class="tag-input-wrap" id="tagInputWrap" style="display:none;">
+              <input class="tag-input" id="tagInputField" type="text" placeholder="Test name&hellip;" onkeydown="tagKeydown(event)"/>
+              <button class="tag-input-btn" onclick="addTag()">Add</button>
+            </div>
+          </div>
+          <div class="error-msg" id="errTags" style="margin-bottom:8px;">At least one test must be ordered.</div>
+
+          <div class="sec-label" style="margin-top:4px;">Priority &amp; Notes</div>
+          <div class="priority-row">
+            <span class="badge-stat">STAT</span>
+            <span class="priority-time" id="submitTime">Submitted Apr 9, 2026 &middot; 8:02</span>
+          </div>
+          <div class="note-box">
+            <textarea class="note-textarea" id="fieldNote" rows="2" placeholder="Add clinical notes here&hellip;">*Chest pain workup. Stat labs requested by ER.</textarea>
+          </div>
+
+          <div class="sec-label">Assign to Technician</div>
+          <div class="select-wrap">
+            <select class="tech-select" id="fieldTech">
+              <option value="">&#8212; Select technician &#8212;</option>
+              <option value="Winter Kim, RMT" selected>Winter Kim, RMT</option>
+              <option value="Alex Santos, RMT">Alex Santos, RMT</option>
+              <option value="Jenna Reyes, RMT">Jenna Reyes, RMT</option>
+              <option value="Marco Dela Cruz, RMT">Marco Dela Cruz, RMT</option>
+            </select>
+            <span class="select-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </div>
+          <div class="error-msg" id="errTech" style="margin-top:-20px; margin-bottom:14px;">Please assign a technician.</div>
+
+          <div class="actions">
+            <button class="btn btn-cancel" onclick="handleCancel()">Cancel</button>
+            <button class="btn btn-confirm" id="confirmBtn" onclick="handleConfirm()">Confirm &ndash; Mark as Processing</button>
+          </div>
+
+          <div class="confirm-overlay" id="successOverlay">
+            <div class="confirm-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="confirm-title">Marked as Processing!</div>
+            <div class="confirm-sub" id="successSub">REQ-2026001 has been assigned to Winter Kim, RMT.</div>
+            <button class="confirm-close-btn" onclick="resetForm()">Done</button>
+          </div>
+
+        </div>
+
+        <div class="success-badge">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </span>
+    <span id="toastMsg">Done!</span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
